@@ -4,15 +4,6 @@ version = "0.2.0+26.3-26.51"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
-# 本文件是 vendor 副本的清单。
-# 原 crate 用 workspace 继承（`version.workspace = true` 等），
-# 这里已把继承项展开成具体值（并去掉 `[lints] workspace = true`），
-# 使其能脱离 Pumpkin 自己的 workspace 独立编译。
-#
-# 来源：Pumpkin-MC/Pumpkin @ 4426d1113a211e6018a2db416e33b6b8a7802614
-#       crates/pumpkin-plugin-api/Cargo.toml
-# 依赖版本取自该 commit 的 [workspace.dependencies]
-
 [dependencies]
 wit-bindgen = { version = "0.62", default-features = false, features = ["macros"] }
 tracing = { version = "0.1.44", default-features = false, features = ["std", "attributes"] }
@@ -20,6 +11,5 @@ postcard = { version = "1.1", default-features = false, features = ["alloc"] }
 tracing-serde-structured = { version = "0.4", default-features = false }
 serde_json = { version = "1.0", default-features = false, features = ["std"] }
 
-# 仅 cargo-component 使用；用普通 cargo 构建时会被忽略。
 [package.metadata.component]
 target = { path = "../pumpkin-plugin-wit" }

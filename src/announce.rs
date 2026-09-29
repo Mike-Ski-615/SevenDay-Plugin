@@ -1,7 +1,7 @@
-use pumpkin_plugin_api::text::TextComponent;
-use pumpkin_plugin_api::Server;
 use crate::config::{day_config, LOG_PREFIX};
 use crate::state::DayState;
+use pumpkin_plugin_api::text::TextComponent;
+use pumpkin_plugin_api::Server;
 pub fn announce(server: &Server, state: &DayState) {
     let cfg = day_config(state.day);
     server.broadcast(&format!(

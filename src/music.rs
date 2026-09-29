@@ -1,6 +1,6 @@
+use crate::config::day_config;
 use pumpkin_plugin_api::wit::pumpkin::plugin::sounds::SoundCategory;
 use pumpkin_plugin_api::Player;
-use crate::config::day_config;
 pub const THEME_CATEGORY: SoundCategory = SoundCategory::Records;
 pub fn play_theme(player: &Player, day: u32) {
     player.stop_sound(None, Some(SoundCategory::Music));

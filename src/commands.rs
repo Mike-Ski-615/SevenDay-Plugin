@@ -1,10 +1,10 @@
+use crate::config::{day_config, DAYS, DAY_PERMISSION};
+use crate::engine;
+use crate::time::format_local;
 use pumpkin_plugin_api::command::{CommandError, CommandNode, CommandSender, ConsumedArgs};
 use pumpkin_plugin_api::commands::{Command, CommandHandler};
 use pumpkin_plugin_api::text::TextComponent;
 use pumpkin_plugin_api::{Context, Server};
-use crate::config::{day_config, DAYS, DAY_PERMISSION};
-use crate::engine;
-use crate::time::format_local;
 fn status_text() -> String {
     let state = engine::get_state();
     let cfg = day_config(state.day);
@@ -64,16 +64,14 @@ impl CommandHandler for SetDayHandler {
     }
 }
 pub fn register(context: &Context) {
-    let mut command = Command::new(
-        &["day".to_string()],
-        "查看或控制七日战争天数（仅服主）",
-    )
-    .execute(StatusHandler);
+    let mut command = Command::new(&["day".to_string()], "查看或控制七日战争天数（仅服主）")
+        .execute(StatusHandler);
     command = command.then(CommandNode::literal("status").execute(StatusHandler));
     command = command.then(CommandNode::literal("next").execute(NextHandler));
     for (index, cfg) in DAYS.iter().enumerate() {
         let name = cfg.weekday.to_lowercase();
-        command = command.then(CommandNode::literal(&name).execute(SetDayHandler(index as u32 + 1)));
+        command =
+            command.then(CommandNode::literal(&name).execute(SetDayHandler(index as u32 + 1)));
     }
     context.register_command(command, DAY_PERMISSION);
 }
