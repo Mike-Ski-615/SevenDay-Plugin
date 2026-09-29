@@ -12,5 +12,4 @@ crate-type = ["cdylib"]
 pumpkin-plugin-api = { path = "../vendor/pumpkin-plugin-api" }
 tracing = "0.1"
 
-[profile.release]
-lto = true
+# 注：release profile（含 LTO）定义在仓库根的 workspace Cargo.toml 里。
