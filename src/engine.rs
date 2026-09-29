@@ -4,7 +4,7 @@ use tracing::info;
 use crate::announce::announce;
 use crate::config::LOG_PREFIX;
 use crate::music::play_theme;
-use crate::state::DayState;
+use crate::state::{resume, DayState};
 use crate::store;
 use crate::time::{format_local, next_boundary_ms, now_ms};
 static STATE: Mutex<DayState> = Mutex::new(DayState {
@@ -56,15 +56,19 @@ fn commit(previous: DayState, next: DayState, server: Option<&Server>) {
 pub fn init(ctx: &Context) -> DayState {
     let dir = ctx.get_data_folder();
     *lock(&DATA_DIR) = dir.clone();
-    let previous = store::read_file(&dir);
-    let next = DayState::fresh(next_boundary_ms(now_ms()));
+    let now = now_ms();
+    let next = match store::read_file(&dir) {
+        Some(saved) => resume(saved, now),
+        None => DayState::fresh(next_boundary_ms(now)),
+    };
     set_state(next);
     persist();
     info!(
-        "{} 初始化：第 1 天（第 1 轮），切换时刻 {}（读取到旧存档：{}，已按规则重置）",
+        "{} 初始化：第 {} 天（第 {} 轮），切换时刻 {}",
         LOG_PREFIX,
-        format_local(next.boundary_at),
-        previous.map_or_else(|| "无".to_string(), |p| format!("第 {} 天", p.day))
+        next.day,
+        next.round,
+        format_local(next.boundary_at)
     );
     next
 }

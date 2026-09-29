@@ -1,6 +1,14 @@
-[workspace]
-members = ["SevenDays"]
-exclude = ["vendor"]
-resolver = "3"
+[package]
+name = "seven_days"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+pumpkin-plugin-api = { path = "vendor/pumpkin-plugin-api" }
+tracing = "0.1"
+
 [profile.release]
 lto = true

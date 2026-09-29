@@ -1,3 +1,5 @@
+use crate::time::next_boundary_ms;
+
 pub const CYCLE_DAYS: u32 = 7;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct DayState {
@@ -31,4 +33,36 @@ impl DayState {
 }
 pub fn clamp_day(day: u32) -> u32 {
     day.clamp(1, CYCLE_DAYS)
+}
+
+pub fn resume(mut saved: DayState, now: i64) -> DayState {
+    while saved.boundary_at <= now {
+        saved = saved.advance(next_boundary_ms(saved.boundary_at));
+    }
+    saved
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::time::next_boundary_ms;
+
+    #[test]
+    fn resume_skips_elapsed_boundaries() {
+        let b0 = next_boundary_ms(0);
+        let day = 86_400_000_i64;
+        let saved = DayState {
+            day: 6,
+            round: 1,
+            boundary_at: b0,
+        };
+        assert_eq!(
+            resume(saved, b0 + 3 * day + 1),
+            DayState {
+                day: 3,
+                round: 2,
+                boundary_at: b0 + 4 * day,
+            }
+        );
+    }
 }

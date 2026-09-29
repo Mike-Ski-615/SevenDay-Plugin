@@ -3,14 +3,6 @@
 version = 4
 
 [[package]]
-name = "SevenDays"
-version = "0.1.0"
-dependencies = [
- "pumpkin-plugin-api",
- "tracing",
-]
-
-[[package]]
 name = "anyhow"
 version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -290,6 +282,14 @@ dependencies = [
  "serde",
  "serde_core",
  "zmij",
+]
+
+[[package]]
+name = "seven_days"
+version = "0.1.0"
+dependencies = [
+ "pumpkin-plugin-api",
+ "tracing",
 ]
 
 [[package]]
