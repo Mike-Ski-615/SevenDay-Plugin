@@ -2,14 +2,8 @@
 name = "SevenDays"
 version = "0.1.0"
 edition = "2024"
-
 [lib]
 crate-type = ["cdylib"]
-
 [dependencies]
-# 插件 API 已 vendor 到仓库根目录的 vendor/（多插件共享），版本钉死、构建不需联网。
-# 更新方式：服务器升级后比对 WIT 的 blob sha，按 vendor/README.md 重新拷贝。
 pumpkin-plugin-api = { path = "../vendor/pumpkin-plugin-api" }
 tracing = "0.1"
-
-# 注：release profile（含 LTO）定义在仓库根的 workspace Cargo.toml 里。

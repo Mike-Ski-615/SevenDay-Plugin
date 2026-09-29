@@ -1,14 +1,10 @@
-//! `/day` 命令树（仅服主）。
-
 use pumpkin_plugin_api::command::{CommandError, CommandNode, CommandSender, ConsumedArgs};
 use pumpkin_plugin_api::commands::{Command, CommandHandler};
 use pumpkin_plugin_api::text::TextComponent;
 use pumpkin_plugin_api::{Context, Server};
-
 use crate::config::{day_config, DAYS, DAY_PERMISSION};
 use crate::engine;
 use crate::time::format_local;
-
 fn status_text() -> String {
     let state = engine::get_state();
     let cfg = day_config(state.day);
@@ -21,10 +17,7 @@ fn status_text() -> String {
         format_local(state.boundary_at)
     )
 }
-
-/// `/day` 与 `/day status`：查看当前状态。
 pub struct StatusHandler;
-
 impl CommandHandler for StatusHandler {
     fn handle(
         &self,
@@ -36,10 +29,7 @@ impl CommandHandler for StatusHandler {
         Ok(1)
     }
 }
-
-/// `/day next`
 pub struct NextHandler;
-
 impl CommandHandler for NextHandler {
     fn handle(
         &self,
@@ -56,10 +46,7 @@ impl CommandHandler for NextHandler {
         Ok(1)
     }
 }
-
-/// `/day <weekday>`：跳到指定天。
 pub struct SetDayHandler(pub u32);
-
 impl CommandHandler for SetDayHandler {
     fn handle(
         &self,
@@ -76,23 +63,17 @@ impl CommandHandler for SetDayHandler {
         Ok(1)
     }
 }
-
-/// 构建并注册 `/day` 命令树。
 pub fn register(context: &Context) {
     let mut command = Command::new(
         &["day".to_string()],
         "查看或控制七日战争天数（仅服主）",
     )
     .execute(StatusHandler);
-
     command = command.then(CommandNode::literal("status").execute(StatusHandler));
     command = command.then(CommandNode::literal("next").execute(NextHandler));
-
-    // 每周一天一个字面量节点：/day mon … /day sun
     for (index, cfg) in DAYS.iter().enumerate() {
         let name = cfg.weekday.to_lowercase();
         command = command.then(CommandNode::literal(&name).execute(SetDayHandler(index as u32 + 1)));
     }
-
     context.register_command(command, DAY_PERMISSION);
 }
