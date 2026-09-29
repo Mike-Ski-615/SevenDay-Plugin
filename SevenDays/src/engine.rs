@@ -22,6 +22,13 @@ static STATE: Mutex<DayState> = Mutex::new(DayState {
 /// 插件私有数据目录（`on_load` 时写入）。
 static DATA_DIR: Mutex<String> = Mutex::new(String::new());
 
+/// 待播音乐的玩家名。
+///
+/// 官方文档警告：宿主 API 调用可能**同步回调**进插件（component model 重入），
+/// 而阻塞型事件处理器里做这种调用会触发 `LegacySyncReentry` 并中止实例。
+/// 所以加入事件里**只入队**，真正的宿主调用（播歌）留到调度任务里做。
+static PENDING_MUSIC: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     m.lock().unwrap_or_else(|e| e.into_inner())
 }
@@ -89,8 +96,28 @@ pub fn init(ctx: &Context) -> DayState {
     next
 }
 
-/// 由周期任务调用：跨过边界就推进一天。
+/// 玩家加入时只记录名字，不碰任何宿主 API。
+pub fn enqueue_music(player_name: String) {
+    lock(&PENDING_MUSIC).push(player_name);
+}
+
+/// 在调度任务里兑现待播队列。
+fn drain_pending_music(server: &Server) {
+    let names: Vec<String> = {
+        let mut pending = lock(&PENDING_MUSIC);
+        std::mem::take(&mut *pending)
+    };
+    for name in names {
+        if let Some(player) = server.get_player_by_name(&name) {
+            play_theme(&player, get_state().day);
+        }
+    }
+}
+
+/// 由周期任务调用：先兑现待播队列，再看是否跨过边界。
 pub fn tick(server: &Server) {
+    drain_pending_music(server);
+
     let current = get_state();
     if now_ms() < current.boundary_at {
         return;

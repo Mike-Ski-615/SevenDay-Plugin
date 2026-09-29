@@ -19,17 +19,16 @@ use pumpkin_plugin_api::{Context, EventHandler, Plugin, PluginMetadata, Server};
 use tracing::info;
 
 use crate::config::{day_config, DAY_PERMISSION, LOG_PREFIX};
-use crate::music::play_theme;
 
 /// 每 20 tick（= 1 秒）检查一次时间边界。
 const CHECK_PERIOD_TICKS: u64 = 20;
 
-/// 玩家加入时播放当天主题曲。
+/// 玩家加入时**只入队**：宿主调用留到调度任务里做，避免事件处理器内的重入限制。
 struct JoinHandler;
 
 impl EventHandler<PlayerJoinEvent> for JoinHandler {
     fn handle(&self, _server: Server, event: PlayerJoinEventData) -> PlayerJoinEventData {
-        play_theme(&event.player, engine::get_state().day);
+        engine::enqueue_music(event.player.get_name());
         event
     }
 }
@@ -74,8 +73,8 @@ impl Plugin for SevenDayWar {
             engine::tick(&server);
         });
 
-        // 玩家加入时播放当天主题曲。
-        context.register_event_handler(JoinHandler, EventPriority::Normal, true)?;
+        // 玩家加入时入队（非阻塞；真正的播歌在调度任务里做）。
+        context.register_event_handler(JoinHandler, EventPriority::Normal, false)?;
 
         let cfg = day_config(state.day);
         info!(
