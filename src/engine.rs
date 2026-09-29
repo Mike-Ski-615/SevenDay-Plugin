@@ -1,9 +1,10 @@
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicI64, Ordering};
 use pumpkin_plugin_api::{Context, Server};
 use tracing::info;
 use crate::announce::announce;
 use crate::config::LOG_PREFIX;
-use crate::music::play_theme;
+use crate::music::{play_theme, silence_vanilla_music};
 use crate::state::{resume, DayState};
 use crate::store;
 use crate::time::{format_local, next_boundary_ms, now_ms};
@@ -14,8 +15,21 @@ static STATE: Mutex<DayState> = Mutex::new(DayState {
 });
 static DATA_DIR: Mutex<String> = Mutex::new(String::new());
 static PENDING_MUSIC: Mutex<Vec<String>> = Mutex::new(Vec::new());
+static MUSIC_SILENCE_UNTIL: AtomicI64 = AtomicI64::new(0);
+const THEME_SILENCE_MS: i64 = 360_000;
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
     m.lock().unwrap_or_else(|e| e.into_inner())
+}
+fn arm_music_silence() {
+    MUSIC_SILENCE_UNTIL.store(now_ms() + THEME_SILENCE_MS, Ordering::Relaxed);
+}
+fn enforce_music_silence(server: &Server) {
+    if now_ms() >= MUSIC_SILENCE_UNTIL.load(Ordering::Relaxed) {
+        return;
+    }
+    for player in server.get_all_players() {
+        silence_vanilla_music(&player);
+    }
 }
 pub fn get_state() -> DayState {
     *lock(&STATE)
@@ -43,6 +57,7 @@ fn commit(previous: DayState, next: DayState, server: Option<&Server>) {
         for player in srv.get_all_players() {
             play_theme(&player, next.day);
         }
+        arm_music_silence();
     }
     info!(
         "{} 切换：第 {} 天 → 第 {} 天（第 {} 轮），下一日边界 {}",
@@ -80,14 +95,19 @@ fn drain_pending_music(server: &Server) {
         let mut pending = lock(&PENDING_MUSIC);
         std::mem::take(&mut *pending)
     };
+    if names.is_empty() {
+        return;
+    }
     for name in names {
         if let Some(player) = server.get_player_by_name(&name) {
             play_theme(&player, get_state().day);
         }
     }
+    arm_music_silence();
 }
 pub fn tick(server: &Server) {
     drain_pending_music(server);
+    enforce_music_silence(server);
     let current = get_state();
     if now_ms() < current.boundary_at {
         return;
