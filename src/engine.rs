@@ -1,12 +1,12 @@
 use crate::announce::announce;
 use crate::config::LOG_PREFIX;
 use crate::music::{play_theme, silence_vanilla_music};
-use crate::state::{resume, DayState};
+use crate::state::{DayState, resume};
 use crate::store;
 use crate::time::{format_local, next_boundary_ms, now_ms};
 use pumpkin_plugin_api::{Context, Server};
-use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicI64, Ordering};
 use tracing::info;
 static STATE: Mutex<DayState> = Mutex::new(DayState {
     day: 1,

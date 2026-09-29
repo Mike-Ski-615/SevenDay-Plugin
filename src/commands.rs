@@ -1,4 +1,4 @@
-use crate::config::{day_config, DAYS, DAY_PERMISSION};
+use crate::config::{DAY_PERMISSION, DAYS, day_config};
 use crate::engine;
 use crate::time::format_local;
 use pumpkin_plugin_api::command::{CommandError, CommandNode, CommandSender, ConsumedArgs};
