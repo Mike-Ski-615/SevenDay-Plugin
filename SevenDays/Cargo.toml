@@ -7,9 +7,9 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
-# 插件 API 已 vendor 进仓库（见 vendor/README.md），版本钉死、构建不需联网。
+# 插件 API 已 vendor 到仓库根目录的 vendor/（多插件共享），版本钉死、构建不需联网。
 # 更新方式：服务器升级后比对 WIT 的 blob sha，按 vendor/README.md 重新拷贝。
-pumpkin-plugin-api = { path = "vendor/pumpkin-plugin-api" }
+pumpkin-plugin-api = { path = "../vendor/pumpkin-plugin-api" }
 tracing = "0.1"
 
 [profile.release]

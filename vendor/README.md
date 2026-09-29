@@ -1,7 +1,15 @@
 # vendor/
 
-`pumpkin-plugin-api` 的**内置副本**。目的是把插件 API 版本**钉死在仓库里**，
-不再使用 `git = "..." , rev = "..."` 这种构建时联网、且随上游变动的写法。
+`pumpkin-plugin-api` 的**内置副本**，被本仓库内**所有插件共享**。
+
+各插件在自己的 `Cargo.toml` 里引用：
+
+```toml
+pumpkin-plugin-api = { path = "../vendor/pumpkin-plugin-api" }
+```
+
+目的是把插件 API 版本**钉死在仓库里**，不再使用 `git = "...", rev = "..."` 这种构建时联网、
+且随上游变动的写法。
 
 - **来源**：`Pumpkin-MC/Pumpkin` @ commit `4426d1113a211e6018a2db416e33b6b8a7802614`（nightly）
 - **内容**：
