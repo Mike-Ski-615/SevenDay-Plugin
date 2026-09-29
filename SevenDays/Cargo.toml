@@ -1,0 +1,18 @@
+[package]
+name = "SevenDays"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# 必须钉住与服务器 WIT 一致的提交 —— crates.io 上的 0.1.0-dev+26.2-26.45 会加载失败。
+# 本服务器的插件 WIT 对应 Pumpkin 的 nightly（commit 4426d1113a211e6018a2db416e33b6b8a7802614）：
+#   crates/pumpkin-plugin-wit/v0.1/event.wit  blob sha = 5a220b016b4ce11ce1a7e4f4722f6372ed39f976
+# 服务器升级后需重新核对这个 sha，再决定是否更新 rev。
+pumpkin-plugin-api = { git = "https://github.com/Pumpkin-MC/Pumpkin", rev = "4426d1113a211e6018a2db416e33b6b8a7802614" }
+tracing = "0.1"
+
+[profile.release]
+lto = true
