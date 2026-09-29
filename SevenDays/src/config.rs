@@ -1,7 +1,5 @@
 //! 天数配置：每天的名称、星期缩写、主题曲。
 
-use pumpkin_plugin_api::wit::pumpkin::plugin::sounds::Sound;
-
 use crate::state::clamp_day;
 
 /// 命令权限节点；命名空间须与插件名一致。
@@ -16,8 +14,14 @@ pub struct DayConfig {
     pub name: &'static str,
     /// 星期缩写（命令里也用这个）。
     pub weekday: &'static str,
-    /// 当日主题曲（原版音效，用原生 `play_sound` 播放，无需 `/playsound` 命令）。
-    pub sound: Sound,
+    /// 当日主题曲（原版音效资源 ID）。
+    ///
+    /// 用字符串 + `play_custom_sound` 而不是 `Sound` 枚举：
+    /// 宿主的 `play_sound` 用 `format!("{sound:?}").to_lowercase().replace('_', ".")`
+    /// 拼名字（如 `MusicOverworldForest` → `musicoverworldforest`），分隔符全丢，
+    /// 导致 `from_name` 查不到而返回 Err；WIT 签名没有 result，Err 在 guest 侧就是 trap。
+    /// `play_custom_sound` 直接收名字，无查表、无失败路径。
+    pub sound: &'static str,
 }
 
 /// 7 天的配置表，下标 0 = 第 1 天（周一）。
@@ -25,37 +29,37 @@ pub const DAYS: [DayConfig; 7] = [
     DayConfig {
         name: "自由发育日",
         weekday: "Mon",
-        sound: Sound::MusicOverworldForest,
+        sound: "minecraft:music.overworld.forest",
     },
     DayConfig {
         name: "阵营形成日",
         weekday: "Tue",
-        sound: Sound::MusicOverworldMeadow,
+        sound: "minecraft:music.overworld.meadow",
     },
     DayConfig {
         name: "阵营形成日",
         weekday: "Wed",
-        sound: Sound::MusicOverworldGrove,
+        sound: "minecraft:music.overworld.grove",
     },
     DayConfig {
         name: "阵营形成日",
         weekday: "Thu",
-        sound: Sound::MusicOverworldJungle,
+        sound: "minecraft:music.overworld.jungle",
     },
     DayConfig {
         name: "幸运交易日",
         weekday: "Fri",
-        sound: Sound::MusicOverworldCherryGrove,
+        sound: "minecraft:music.overworld.cherry_grove",
     },
     DayConfig {
         name: "自由发育日",
         weekday: "Sat",
-        sound: Sound::MusicOverworldLushCaves,
+        sound: "minecraft:music.overworld.lush_caves",
     },
     DayConfig {
         name: "决战 PvP 日",
         weekday: "Sun",
-        sound: Sound::MusicDragon,
+        sound: "minecraft:music.dragon",
     },
 ];
 
